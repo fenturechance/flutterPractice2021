@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 void main() {
+  List<String> textList = ['aaa', 'bbb', 'ccc'];
   runApp(MaterialApp(
     home: Scaffold(
       appBar: AppBar(
@@ -11,20 +12,14 @@ void main() {
       ),
       body: Column(
         //垂直排列
-        children: [
-          Padding(
-            padding: EdgeInsets.all(10.0), //內距
-            child: AspectRatio(
-              aspectRatio: 16 / 9, //大小固定16比9
-              child: Container(
-                child: Image.network('https://fakeimg.pl/250x100',
-                    fit: BoxFit.cover), //撐大圖片
-              ),
-            ),
-          ),
-          Text('test Image')
-        ],
+        children: List.generate(textList.length, (index) {
+        return _generateText(textList[index]);
+      })
       ),
     ),
   ));
+}
+
+Widget _generateText(String text) {
+  return Text(text);
 }
