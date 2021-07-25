@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'detail.dart';
 
 void main() {
   runApp(MaterialApp(home: HomePage()));
@@ -52,10 +53,23 @@ class _HomePageState extends State<HomePage> {
               String name =
                   '${result[index]['name']['first']} ${result[index]['name']['last']}';
               String email = '${result[index]['email']}';
-              return ListTile(
-                  title: Row(
-                children: [Expanded(child: Text(name)), Text(email)],
-              ));
+              return InkWell(
+                  //類似GestureDetector只是多了動畫
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: Colors.transparent,
+                            content: Detail(person: result[index]),
+                          );
+                        });
+                  },
+                  child: ListTile(
+                    title: Row(
+                      children: [Expanded(child: Text(name)), Text(email)],
+                    ),
+                  ));
             },
             itemCount: result.length,
           );
