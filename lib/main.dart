@@ -1,88 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'detail.dart';
 
 void main() {
-  runApp(MaterialApp(home: HomePage()));
+  runApp(MaterialApp(
+    home: HomePage(),
+  ));
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+  @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Map resData = Map();
-  @override
-  void initState() {
-    super.initState();
-    getData();
-  }
-
-  dynamic getData() async {
-    Response? res;
-    try {
-      res = await Dio().get('https://randomuser.me/api/?results=25');
-      if (res.statusCode == 200 && res.data != null) {
-        // print(res);
-        return res;
-      }
-    } on DioError catch (e) {
-      print(e);
-      throw e;
-    } catch (e) {
-      print(e);
-      throw e;
-    }
-    return res;
-  }
-
+  final _inputController = TextEditingController();
+  String onChangeValue = '';
+  String onSubmitValue = '';
+  String buttonClickValue = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
-            child: Expanded(
-                child: FutureBuilder(
-      future: getData(),
-      builder: (BuildContext context, AsyncSnapshot snap) {
-        if (snap.hasData) {
-          Response res = snap.data;
-          Map<String, dynamic> data = res.data;
-          List<dynamic> result = data['results'];
-          return ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              String name =
-                  '${result[index]['name']['first']} ${result[index]['name']['last']}';
-              String email = '${result[index]['email']}';
-              return InkWell(
-                  //類似GestureDetector只是多了動畫
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            backgroundColor: Colors.transparent,
-                            content: Detail(person: result[index]),
-                          );
-                        });
-                  },
-                  child: ListTile(
-                    title: Row(
-                      children: [Expanded(child: Text(name)), Text(email)],
-                    ),
-                  ));
+      child: Center(
+          child: Column(
+        children: [
+          TextField(
+            controller: _inputController,
+            onChanged: (value) {
+              setState(() {
+                onChangeValue = value;
+              });
             },
-            itemCount: result.length,
-          );
-        } else {
-          return Center(child: CircularProgressIndicator());
-        }
-      },
-    ))));
-  }
-
-  @override
-  void dispose() {
-    resData = Map();
-    super.dispose();
+            onSubmitted: (value) {
+              setState(() {
+                onSubmitValue = value;
+              });
+            },
+            decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.blue.shade400,
+                border: InputBorder.none,
+                hintText: "請輸入",
+                hintStyle: TextStyle(color: Colors.yellow)),
+          ),
+          GestureDetector(
+              onTap: () {
+                setState(() {
+                  buttonClickValue = _inputController.text;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.all(10.0),
+                margin: EdgeInsets.symmetric(vertical: 10.0),
+                child: Text('按鈕'),
+                decoration: BoxDecoration(color: Colors.blue),
+              )),
+          Text('onChange後：${onChangeValue}'),
+          Text('onSubmit後：${onSubmitValue}'),
+          Text('按下按鈕後：${buttonClickValue}'),
+        ],
+      )),
+    ));
   }
 }
