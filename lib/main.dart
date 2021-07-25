@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'page2.dart';
+import 'package:dio/dio.dart';
+
 void main() {
-  runApp(GlobalData(
-    child: MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (BuildContext context) => HomePage(),
-        '/page2': (BuildContext context) => Page2(),
-      },
-    ),
-  ));
+  runApp(MaterialApp(home: HomePage()));
 }
 
 class HomePage extends StatefulWidget {
@@ -17,43 +10,65 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Map resData = Map();
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  dynamic getData() async {
+    Response? res;
+    try {
+      res = await Dio().get('https://randomuser.me/api/?results=25');
+      if (res.statusCode == 200 && res.data != null) {
+        // print(res);
+        return res;
+      }
+    } on DioError catch (e) {
+      print(e);
+      throw e;
+    } catch (e) {
+      print(e);
+      throw e;
+    }
+    return res;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('image')),
-        body: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                GlobalData.of(context).title = 'new Title';
-                Navigator.of(context).pushNamed('/page2');
-              },
-              child: Text('page2'),
-            )
-          ],
-        ));
-  }
-}
-
-class GlobalData extends InheritedModel {
-  GlobalData({
-    this.title,
-    Widget? child,
-  }) : super(child: child!);
-
-  String? title;
-
-  static GlobalData of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<GlobalData>()!;
+        body: SafeArea(
+            child: Expanded(
+                child: FutureBuilder(
+      future: getData(),
+      builder: (BuildContext context, AsyncSnapshot snap) {
+        if (snap.hasData) {
+          Response res = snap.data;
+          Map<String, dynamic> data = res.data;
+          List<dynamic> result = data['results'];
+          return ListView.builder(
+            itemBuilder: (BuildContext context, int index) {
+              String name =
+                  '${result[index]['name']['first']} ${result[index]['name']['last']}';
+              String email = '${result[index]['email']}';
+              return ListTile(
+                  title: Row(
+                children: [Expanded(child: Text(name)), Text(email)],
+              ));
+            },
+            itemCount: result.length,
+          );
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+      },
+    ))));
   }
 
   @override
-  bool updateShouldNotify(GlobalData old) => title != old.title;
-
-  @override
-  bool updateShouldNotifyDependent(GlobalData oldWidget, Set dependencies) {
-    if (dependencies.contains('title') && oldWidget.title != title) {
-      return true;
-    }
-    return false;
+  void dispose() {
+    resData = Map();
+    super.dispose();
   }
 }
