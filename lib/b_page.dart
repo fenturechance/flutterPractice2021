@@ -10,9 +10,8 @@ class BPage extends StatefulWidget {
 class _BPageState extends State<BPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('B頁'),
-      ));
+    return Center(
+      child: Text('B頁'),
+    );
   }
 }
