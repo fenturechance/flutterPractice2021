@@ -19,9 +19,9 @@ class _HomePageState extends State<HomePage> {
     {"page": BPage(), "icon": Icon(Icons.person), "title": "B頁"},
   ];
   List<ListTile> setPages(List _pages) {
-    List<ListTile> list = [];
-    for (var index = 0; index < _pages.length; index++) {
-      ListTile tile = ListTile(
+    return List<ListTile>.generate(
+        _pages.length,
+        (index) => ListTile(
           leading: CircleAvatar(
             child: _pages[index]["icon"],
           ),
@@ -31,10 +31,7 @@ class _HomePageState extends State<HomePage> {
               _currentIndex = index;
             });
             Navigator.of(context).pop();
-          });
-      list.add(tile);
-    }
-    return list;
+          }));
   }
   int _currentIndex = 0;
   @override
