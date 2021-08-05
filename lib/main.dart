@@ -1,77 +1,61 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-
-double generateBorderRadius() => Random().nextDouble() * 64;
-double generateMargin() => Random().nextDouble() * 64;
-Color generateColor() => Color(0xFFFFFFFF & Random().nextInt(0xFFFFFFFF));
 
 void main() {
   runApp(MaterialApp(
-    home: AnimatedContainerDemo(),
+    home: HomePage(),
   ));
 }
 
-class AnimatedContainerDemo extends StatefulWidget {
-  const AnimatedContainerDemo({Key? key}) : super(key: key);
-  static String routeName = '/basics/01_animated_container';
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  _AnimatedContainerDemoState createState() => _AnimatedContainerDemoState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _AnimatedContainerDemoState extends State<AnimatedContainerDemo> {
-  late Color color;
-  late double borderRadius;
-  late double margin;
-
-  @override
-  void initState() {
-    super.initState();
-    color = Colors.deepPurple;
-    borderRadius = generateBorderRadius();
-    margin = generateMargin();
-  }
-
-  void change() {
-    setState(() {
-      color = generateColor();
-      borderRadius = generateBorderRadius();
-      margin = generateMargin();
-    });
-  }
-
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AnimatedContainer'),
+        title: const Text('Page 1'),
       ),
       body: Center(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 128,
-                height: 128,
-                child: AnimatedContainer(
-                  margin: EdgeInsets.all(margin),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(borderRadius),
-                  ),
-                  duration: const Duration(milliseconds: 400),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              child: const Text(
-                'change',
-              ),
-              onPressed: () => change(),
-            ),
-          ],
+        child: ElevatedButton(
+          child: const Text('Go!'),
+          onPressed: () {
+            Navigator.of(context).push<void>(_createRoute());
+          },
         ),
+      ),
+    );
+  }
+}
+
+Route _createRoute() {
+  return PageRouteBuilder<SlideTransition>(
+    pageBuilder: (context, animation, secondaryAnimation) => _Page2(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      var tween =
+          Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
+      var curveTween = CurveTween(curve: Curves.ease);
+
+      return SlideTransition(
+        position: animation.drive(curveTween).drive(tween),
+        child: child,
+      );
+    },
+  );
+}
+class _Page2 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Page 2'),
+      ),
+      body: Center(
+        child: Text('Page 2!', style: Theme.of(context).textTheme.headline4),
       ),
     );
   }
