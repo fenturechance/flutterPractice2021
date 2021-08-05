@@ -1,60 +1,78 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'a_page.dart';
-import 'b_page.dart';
+
+double generateBorderRadius() => Random().nextDouble() * 64;
+double generateMargin() => Random().nextDouble() * 64;
+Color generateColor() => Color(0xFFFFFFFF & Random().nextInt(0xFFFFFFFF));
 
 void main() {
-  runApp(MaterialApp(home: HomePage()));
+  runApp(MaterialApp(
+    home: AnimatedContainerDemo(),
+  ));
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class AnimatedContainerDemo extends StatefulWidget {
+  const AnimatedContainerDemo({Key? key}) : super(key: key);
+  static String routeName = '/basics/01_animated_container';
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _AnimatedContainerDemoState createState() => _AnimatedContainerDemoState();
 }
 
-class _HomePageState extends State<HomePage> {
-  List _pages = [
-    {"page": APage(), "icon": Icon(Icons.home), "title": "A頁"},
-    {"page": BPage(), "icon": Icon(Icons.person), "title": "B頁"},
-  ];
-  List<ListTile> setPages(List _pages) {
-    return List<ListTile>.generate(
-        _pages.length,
-        (index) => ListTile(
-          leading: CircleAvatar(
-            child: _pages[index]["icon"],
-          ),
-          title: Text(_pages[index]["title"]),
-          onTap: () {
-            setState(() {
-              _currentIndex = index;
-            });
-            Navigator.of(context).pop();
-          }));
+class _AnimatedContainerDemoState extends State<AnimatedContainerDemo> {
+  late Color color;
+  late double borderRadius;
+  late double margin;
+
+  @override
+  void initState() {
+    super.initState();
+    color = Colors.deepPurple;
+    borderRadius = generateBorderRadius();
+    margin = generateMargin();
   }
-  int _currentIndex = 0;
+
+  void change() {
+    setState(() {
+      color = generateColor();
+      borderRadius = generateBorderRadius();
+      margin = generateMargin();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    List<ListTile> pageTiles = setPages(_pages);
     return Scaffold(
-        appBar: AppBar(
-          title: Text('這是APP'),
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                  currentAccountPicture: CircleAvatar(
-                    backgroundImage:
-                        NetworkImage('https://fakeimg.pl/100x100/'),
+      appBar: AppBar(
+        title: const Text('AnimatedContainer'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 128,
+                height: 128,
+                child: AnimatedContainer(
+                  margin: EdgeInsets.all(margin),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(borderRadius),
                   ),
-                  accountName: Text('用戶名'),
-                  accountEmail: Text('用戶email')),
-              ...pageTiles
-            ],
-          ),
+                  duration: const Duration(milliseconds: 400),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              child: const Text(
+                'change',
+              ),
+              onPressed: () => change(),
+            ),
+          ],
         ),
-        body: _pages[_currentIndex]["page"]);
+      ),
+    );
   }
 }
