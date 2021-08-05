@@ -13,49 +13,57 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
+  static const Duration _duration = Duration(seconds: 1);
+  late final AnimationController controller;
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Page 1'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          child: const Text('Go!'),
-          onPressed: () {
-            Navigator.of(context).push<void>(_createRoute());
-          },
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(vsync: this, duration: _duration)
+      ..addListener(() {
+        setState(() {});
+      });
   }
-}
 
-Route _createRoute() {
-  return PageRouteBuilder<SlideTransition>(
-    pageBuilder: (context, animation, secondaryAnimation) => _Page2(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      var tween =
-          Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
-      var curveTween = CurveTween(curve: Curves.ease);
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
-      return SlideTransition(
-        position: animation.drive(curveTween).drive(tween),
-        child: child,
-      );
-    },
-  );
-}
-class _Page2 extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Page 2'),
+        title: const Text('Animation Controller'),
       ),
       body: Center(
-        child: Text('Page 2!', style: Theme.of(context).textTheme.headline4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 200),
+              child: Text(
+                controller.value.toStringAsFixed(2),
+                style: Theme.of(context).textTheme.headline3,
+                textScaleFactor: 1 + controller.value,
+              ),
+            ),
+            ElevatedButton(
+              child: const Text('animate'),
+              onPressed: () {
+                if (controller.status == AnimationStatus.completed) {
+                  controller.reverse();
+                } else {
+                  controller.forward();
+                }
+              },
+            )
+          ],
+        ),
       ),
     );
   }
