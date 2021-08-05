@@ -16,15 +16,19 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   static const Duration _duration = Duration(seconds: 1);
+  static const double accountBalance = 1000000;
   late final AnimationController controller;
+  late final Animation<double> animation;
   @override
   void initState() {
     super.initState();
 
     controller = AnimationController(vsync: this, duration: _duration)
       ..addListener(() {
+        // Marks the widget tree as dirty
         setState(() {});
       });
+    animation = Tween(begin: 0.0, end: accountBalance).animate(controller);
   }
 
   @override
@@ -38,7 +42,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Animation Controller'),
+        title: const Text('Tweens'),
       ),
       body: Center(
         child: Column(
@@ -46,14 +50,15 @@ class _HomePageState extends State<HomePage>
           children: [
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 200),
-              child: Text(
-                controller.value.toStringAsFixed(2),
-                style: Theme.of(context).textTheme.headline3,
-                textScaleFactor: 1 + controller.value,
-              ),
+              child: Text('\$${animation.value.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24)),
             ),
             ElevatedButton(
-              child: const Text('animate'),
+              child: Text(
+                controller.status == AnimationStatus.completed
+                    ? 'Buy a Mansion'
+                    : 'Win Lottery',
+              ),
               onPressed: () {
                 if (controller.status == AnimationStatus.completed) {
                   controller.reverse();
