@@ -15,44 +15,28 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  static const Duration duration = Duration(seconds: 3);
-  late final AnimationController controller;
-  late final Animation<Color?> animation;
-
-  static final colors = [
-    Colors.red,
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.blue,
-    Colors.indigo,
-    Colors.purple,
-  ];
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+  late final CurvedAnimation _curve;
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
 
-    final sequenceItems = <TweenSequenceItem<Color?>>[];
+    _curve = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
-    for (var i = 0; i < colors.length; i++) {
-      final beginColor = colors[i];
-      final endColor = colors[(i + 1) % colors.length];
-      final weight = 1 / colors.length;
-
-      sequenceItems.add(
-        TweenSequenceItem<Color?>(
-          tween: ColorTween(begin: beginColor, end: endColor),
-          weight: weight,
-        ),
-      );
-    }
-    controller = AnimationController(duration: duration, vsync: this);
-    animation = TweenSequence<Color?>(sequenceItems).animate(controller);
+    _animation = Tween(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(_curve);
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -60,22 +44,30 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Custom Tween'),
+        title: const Text(
+          'Fade Transition',
+        ),
       ),
       body: Center(
-        child: AnimatedBuilder(
-          animation: animation,
-          builder: (context, child) {
-            return MaterialButton(
-              color: animation.value,
-              onPressed: () async {
-                await controller.forward();
-                controller.reset();
-              },
-              child: child,
-            );
-          },
-          child: const Text('Animate', style: TextStyle(color: Colors.white)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            FadeTransition(
+              opacity: _animation,
+              child: const Icon(
+                Icons.star,
+                color: Colors.amber,
+                size: 300,
+              ),
+            ),
+            ElevatedButton(
+              child: const Text('animate'),
+              onPressed: () => setState(() {
+                _controller.animateTo(1.0).then<TickerFuture>(
+                    (value) => _controller.animateBack(0.0));
+              }),
+            ),
+          ],
         ),
       ),
     );
