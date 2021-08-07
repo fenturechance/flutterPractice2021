@@ -13,63 +13,104 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _animation;
-  late final CurvedAnimation _curve;
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
+class _HomePageState extends State<HomePage> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+  final listData = [
+    UserModel(0, 'Govind', 'Dixit'),
+    UserModel(1, 'Greta', 'Stoll'),
+    UserModel(2, 'Monty', 'Carlo'),
+    UserModel(3, 'Petey', 'Cruiser'),
+    UserModel(4, 'Barry', 'Cade'),
+  ];
+  final initialListSize = 5;
 
-    _curve = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-
-    _animation = Tween(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(_curve);
+  void addUser() {
+    setState(() {
+      var index = listData.length;
+      listData.add(
+        UserModel(++_maxIdValue, 'New', 'Person'),
+      );
+      _listKey.currentState!
+          .insertItem(index, duration: const Duration(milliseconds: 300));
+    });
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void deleteUser(int id) {
+    setState(() {
+      final index = listData.indexWhere((u) => u.id == id);
+      var user = listData.removeAt(index);
+      _listKey.currentState!.removeItem(
+        index,
+        (context, animation) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+                parent: animation, curve: const Interval(0.5, 1.0)),
+            child: SizeTransition(
+              sizeFactor: CurvedAnimation(
+                  parent: animation, curve: const Interval(0.0, 1.0)),
+              axisAlignment: 0.0,
+              child: _buildItem(user),
+            ),
+          );
+        },
+        duration: const Duration(milliseconds: 600),
+      );
+    });
+  }
+
+  Widget _buildItem(UserModel user) {
+    return ListTile(
+      key: ValueKey<UserModel>(user),
+      title: Text(user.firstName),
+      subtitle: Text(user.lastName),
+      leading: const CircleAvatar(
+        child: Icon(Icons.person),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete),
+        onPressed: () => deleteUser(user.id),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Fade Transition',
-        ),
+        title: const Text('AnimatedList'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: addUser,
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            FadeTransition(
-              opacity: _animation,
-              child: const Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 300,
-              ),
-            ),
-            ElevatedButton(
-              child: const Text('animate'),
-              onPressed: () => setState(() {
-                _controller.animateTo(1.0).then<TickerFuture>(
-                    (value) => _controller.animateBack(0.0));
-              }),
-            ),
-          ],
+      body: SafeArea(
+        child: AnimatedList(
+          key: _listKey,
+          initialItemCount: 5,
+          itemBuilder: (context, index, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: _buildItem(listData[index]),
+            );
+          },
         ),
       ),
     );
   }
 }
+
+class UserModel {
+  UserModel(
+    this.id,
+    this.firstName,
+    this.lastName,
+  );
+
+  final int id;
+  final String firstName;
+  final String lastName;
+}
+
+int _maxIdValue = 4;
