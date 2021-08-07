@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() {
   runApp(MaterialApp(
@@ -14,103 +15,68 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
-  final listData = [
-    UserModel(0, 'Govind', 'Dixit'),
-    UserModel(1, 'Greta', 'Stoll'),
-    UserModel(2, 'Monty', 'Carlo'),
-    UserModel(3, 'Petey', 'Cruiser'),
-    UserModel(4, 'Barry', 'Cade'),
-  ];
-  final initialListSize = 5;
 
-  void addUser() {
+  late double topPosition;
+  late double leftPosition;
+
+  double generateTopPosition(double top) => Random().nextDouble() * top;
+
+  double generateLeftPosition(double left) => Random().nextDouble() * left;
+
+  @override
+  void initState() {
+    super.initState();
+    topPosition = generateTopPosition(30);
+    leftPosition = generateLeftPosition(30);
+  }
+
+  void changePosition(double top, double left) {
     setState(() {
-      var index = listData.length;
-      listData.add(
-        UserModel(++_maxIdValue, 'New', 'Person'),
-      );
-      _listKey.currentState!
-          .insertItem(index, duration: const Duration(milliseconds: 300));
+      topPosition = generateTopPosition(top);
+      leftPosition = generateLeftPosition(left);
     });
   }
 
-  void deleteUser(int id) {
-    setState(() {
-      final index = listData.indexWhere((u) => u.id == id);
-      var user = listData.removeAt(index);
-      _listKey.currentState!.removeItem(
-        index,
-        (context, animation) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-                parent: animation, curve: const Interval(0.5, 1.0)),
-            child: SizeTransition(
-              sizeFactor: CurvedAnimation(
-                  parent: animation, curve: const Interval(0.0, 1.0)),
-              axisAlignment: 0.0,
-              child: _buildItem(user),
-            ),
-          );
-        },
-        duration: const Duration(milliseconds: 600),
-      );
-    });
-  }
-
-  Widget _buildItem(UserModel user) {
-    return ListTile(
-      key: ValueKey<UserModel>(user),
-      title: Text(user.firstName),
-      subtitle: Text(user.lastName),
-      leading: const CircleAvatar(
-        child: Icon(Icons.person),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete),
-        onPressed: () => deleteUser(user.id),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final appBar = AppBar(title: const Text('AnimatedPositioned'));
+    final topPadding = MediaQuery.of(context).padding.top;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AnimatedList'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: addUser,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: AnimatedList(
-          key: _listKey,
-          initialItemCount: 5,
-          itemBuilder: (context, index, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: _buildItem(listData[index]),
-            );
-          },
+      appBar: appBar,
+      body: SizedBox(
+        height: size.height,
+        width: size.width,
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              top: topPosition,
+              left: leftPosition,
+              duration: const Duration(seconds: 1),
+              child: InkWell(
+                onTap: () => changePosition(
+                    size.height -
+                        (appBar.preferredSize.height + topPadding + 50),
+                    size.width - 150),
+                child: Container(
+                  alignment: Alignment.center,
+                  width: 150,
+                  height: 50,
+                  child: Text(
+                    'Click Me',
+                    style: TextStyle(
+                      color:
+                          Theme.of(context).buttonTheme.colorScheme!.onPrimary,
+                    ),
+                  ),
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-class UserModel {
-  UserModel(
-    this.id,
-    this.firstName,
-    this.lastName,
-  );
-
-  final int id;
-  final String firstName;
-  final String lastName;
-}
-
-int _maxIdValue = 4;
